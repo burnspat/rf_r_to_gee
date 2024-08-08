@@ -12,28 +12,30 @@ This repository includes scripts and sample data to take random forest models fi
 
 ## How to use
 
-1. Gather files
+### 1. Gather files
 
-The script '0_format_ranger_for_gee.R' performs the random forest conversion. To run this script, users will need two objects:
+The script **0_format_ranger_for_gee.R** performs the random forest conversion. To run this script, users will need two objects:
+
 - A random forest model fit using the 'ranger' package in R, saved as an .rds file. For models fitted using tidymodels, extract the engine specific model specification before saving:
-```
-parsnip_mod = final_mod %>% extract_fit_parsnip()
-engine_mod = parsnip_mod$fit
-saveRDS(engine_mod, 'mod.rds')
-```
+  ```
+  parsnip_mod = final_mod %>% extract_fit_parsnip()
+  engine_mod = parsnip_mod$fit
+  saveRDS(engine_mod, 'mod.rds')
+  ```
 - The training data used to fit the model, saved as a .csv file
 
-2. Set parameters
+### 2. Set parameters
 
 In the script, set parameters to your specification:
-- response_type: Choose 'classification' or 'regression'
-- response_var: Specify the name of the response variable
-- shortened: Specify whether to use shortened tree format. Forests imported into GEE are subject to a character limit. Using shortened format can prevent errors arising from exceeding this character limit.
 
-3. Run script 
+- *response_type*: Choose 'classification' or 'regression'
+- *response_var*: Specify the name of the response variable
+- *shortened*: Specify whether to use shortened tree format. Forests imported into GEE are subject to a character limit. Using shortened format can prevent errors arising from exceeding this character limit.
+
+### 3. Run script 
 
 The output will be a .txt file with the random forest model formatted for input into GEE.
 
-4. Import into Google Earth Engine
+### 4. Import into Google Earth Engine
 
-Script '1_apply_model_in_gee.R' contains javascript pseduo-code for importing the model into GEE and applying it across a stack of predictor variables.
+The script **1_apply_model_in_gee.R** contains javascript pseduo-code for importing the model into GEE and applying it across a stack of predictor variables.
