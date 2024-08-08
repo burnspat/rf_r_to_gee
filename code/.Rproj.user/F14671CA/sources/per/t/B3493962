@@ -1,0 +1,26 @@
+{
+    "id": "B3493962",
+    "path": "~/github/arctic_biomass_mapping/scripts/rf_r_to_gee/code/0_format_ranger_for_gee.R",
+    "project_path": "0_format_ranger_for_gee.R",
+    "type": "r_source",
+    "hash": "638479285",
+    "contents": "",
+    "dirty": false,
+    "created": 1723153164612.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "99,14",
+        "scrollLine": "71"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1723153218,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1723153218655,
+    "read_only": false,
+    "read_only_alternatives": []
+}
