@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/840049730.svg)](https://zenodo.org/doi/10.5281/zenodo.13774447)
+
 # Format Ranger Random Forest Models for Google Earth Engine
 
 ## Project summary
