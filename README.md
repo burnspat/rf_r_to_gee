@@ -8,7 +8,7 @@ Google Earth Engine (GEE) is a cloud-based platform that allows researchers acce
 
 In contrast, R has been used by ecological researchers for decades and has a robust ecosystem of packages and resources for training, tuning and applying machine learning models, including the 'tidymodels' and 'caret' frameworks.
 
-Thus, researchers often find themselves needing to move between R and GEE over the course of modeling workflow. For example, a researcher might capitalize on GEE's raster processing power to extract predictor variables across a set of training data, then bring the extracted data into R to train and validate a series of models. Ideally, these models could then be applied in GEE across the full raster domain. However, a common sticking point is formatting R-based models in a way that is readable by GEE's javascript based interface. 
+Thus, researchers often find themselves needing to move between R and GEE over the course of a modeling workflow. For example, a researcher might capitalize on GEE's raster processing power to extract predictor variables across a set of training data, then bring the extracted data into R to train and validate a series of models. Ideally, these models could then be applied in GEE across the full raster domain. However, a common sticking point is formatting R-based models in a way that is readable by GEE's javascript based interface. 
 
 This repository includes scripts and sample data to take random forest models fitted via the ranger or randomForest package in R and convert them into the 'tree' based string format required for import into GEE. The code presented here is modified from the 'reprtree' package available here: https://github.com/araastat/reprtree/tree/master
 
@@ -24,11 +24,11 @@ The script provides functionality to fit a test model, or users can load an exis
 
 In the script, set parameters to your specification:
 
-- *model_generation_method*: Choose whether to fit an example model ('fit') or load an existing model ('load')
-- *model_type*: Choose which package was used or will be used to fit the model 'ranger' or 'randomForest'
-- *response_type*: Choose 'classification', 'regression' or 'probability' -- note that 'probability' forests are only available via ranger
-- *caret*: Choose TRUE or FALSE to indicate whether the model was fit using caret. If TRUE, additional processing steps will be automatically taken to format the forest properly.
-- *tidymodels*: Choose TRUE or FALSE to indicate whether the model was fit using tidymodels. If TRUE, additional processing steps will be automatically taken to format the forest properly.
+- *model_generation_method*: Choose whether to fit an example model ('fit') or load an existing model ('load').
+- *model_type*: Choose which package was used or will be used to fit the model -- 'ranger' or 'randomForest.'
+- *response_type*: Choose 'classification', 'regression' or 'probability' -- note that 'probability' forests are only available via ranger.
+- *caret*: Choose TRUE or FALSE to indicate whether the model was fit using caret. If TRUE, additional processing steps will be applied to format the forest properly.
+- *tidymodels*: Choose TRUE or FALSE to indicate whether the model was fit using tidymodels. If TRUE, additional processing steps will be applied to format the forest properly.
 - *out_mod_prefix*: Specify a prefix to use when saving the formatted model. This name will be combined with information on model and response type to create a final model name.
 
 ### 3. Run script 
