@@ -171,7 +171,7 @@ fit.test.mod = function(model_type, model_fit_package, response_type, seed){
   if(model_type == 'randomForest' & response_type == 'probability'){
     stop('Probability models not available for randomForest, either change model type to "ranger", or change response type')
   }
-  if(model_type == 'ranger' & response_type == 'probability' & caret == TRUE){
+  if(model_type == 'ranger' & response_type == 'probability' & model_fit_package == 'caret'){
     stop('Probability models not available in caret, change either model fit package or response type')
   }
   
