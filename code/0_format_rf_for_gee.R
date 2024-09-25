@@ -16,73 +16,40 @@ library(dplyr)
 library(tidyr)
 library(ranger)
 library(randomForest)
+library(caret)
+library(tidymodels)
 source('code/reprtree_update.R')
 options(scipen=999) # Ensure numbers are not represented in scientific notation
 
 # Parameters
 model_generation_method = 'fit' # Choose 'fit' to fit an example model, choose 'load' to load existing model
-model_type = 'ranger' # Specify R package used to create model - 'randomForest' or 'ranger'
+model_type = 'randomForest' # Specify R package used to create model - 'randomForest' or 'ranger'
 response_type = 'regression' # Choose 'classification' or 'probability' or 'regression'
-caret = FALSE # Model fit using caret?
-tidymodels = FALSE # Model fit using tidymodels?
+model_fit_package = 'tidymodels' # Choose 'base' for models fit directly with 'randomForest' or 'ranger', choose 'caret' for models fit using 'caret', choose 'tidymodels' for models fit using tidymodels
 out_mod_prefix = 'mtcars_' # Name prefix to use for output model
 out_path = 'example_output/' # Where to save the formatted forest
 
 # 'load' parameters
+# Note: if loading a model, still provide the parameters above to ensure model is processed properly
 in_path = 'data/mtcars_ranger_regression.rds'
 
 # FIT OR LOAD MODEL ====================================================================================================
 
 # Use example models, or load existing model
-
 if(model_generation_method == 'fit'){
   
-  # Get example dataset
-  data = mtcars %>% select(mpg, am, cyl, wt, hp)
+  rf = fit.test.mod(model_type, model_fit_package, response_type, seed = 12)
   
-  # Fit model
-  if(model_type == 'ranger'){
-    if(response_type == 'classification'){
-      data$am = as.factor(data$am)
-      response_var = 'am'
-      rf = ranger(as.formula(paste(response_var, '~.')), data = data, num.trees = 100)
-    }else if(response_type == 'probability'){
-      data$am = as.factor(data$am)
-      response_var = 'am'
-      rf = ranger(as.formula(paste(response_var, '~.')), data = data, num.trees = 100, probability = TRUE)
-    }else if(response_type == 'regression'){
-      response_var = 'mpg'
-      rf = ranger(as.formula(paste(response_var, '~.')), data = data, num.trees = 100)
-    }else{
-      stop('Response type not recognized, choose "classification" or "probability" or "regression"')
-    }
-  }else if(model_type == 'randomForest'){
-    if(response_type == 'classification'){
-      data$am = as.factor(data$am)
-      response_var = 'am'
-      rf = randomForest(as.formula(paste(response_var, '~.')), data = data, ntree = 100)
-    }else if(response_type == 'probability'){
-      stop('Probability models not available for randomForest, either change model type to "ranger", or change response type')
-    }else if(response_type == 'regression'){
-      response_var = 'mpg'
-      rf = randomForest(as.formula(paste(response_var, '~.')), data = data, ntree = 100)
-    }else{
-      stop('Response type not recognized, choose "classification" or "probability" or "regression"')
-    }
-  }else{
-    stop('Model type not recognized, please choose "ranger" or "randomForest"')
-  }
-
 }else if(model_generation_method == 'load'){
   
   rf = readRDS(in_path)
   
-}
+}else(stop("Model generation method not recognized, choose 'fit' or 'load'"))
 
 # CONVERT FOREST ====================================================================================================
 
 # Prep model
-rf = prep.mod(rf, model_type, response_type, caret = caret, tidymodels = tidymodels)
+rf = prep.mod(rf, model_type, response_type, model_fit_package)
 
 # Convert forest
-convert.forest(rf, paste0(out_path, out_mod_prefix, model_type, '_', response_type, '.txt'))
+convert.forest(rf, paste0(out_path, out_mod_prefix, model_type, '_', response_type, '_', model_fit_package, '.txt'))

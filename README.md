@@ -27,9 +27,15 @@ In the script, set parameters to your specification:
 - *model_generation_method*: Choose whether to fit an example model ('fit') or load an existing model ('load').
 - *model_type*: Choose which package was used or will be used to fit the model -- 'ranger' or 'randomForest.'
 - *response_type*: Choose 'classification', 'regression' or 'probability' -- note that 'probability' forests are only available via ranger.
-- *caret*: Choose TRUE or FALSE to indicate whether the model was fit using caret. If TRUE, additional processing steps will be applied to format the forest properly.
-- *tidymodels*: Choose TRUE or FALSE to indicate whether the model was fit using tidymodels. If TRUE, additional processing steps will be applied to format the forest properly.
+- *model_fit_package*: Specify which R package was used to built the model. Choose 'base' for models fit directly with ranger or randomForest, choose 'caret' for models fit using the caret framework, choose 'tidymodels' for models fit using the tidymodels framework.
 - *out_mod_prefix*: Specify a prefix to use when saving the formatted model. This name will be combined with information on model and response type to create a final model name.
+- *out_path*: Provide an output path where formatted forest will be saved.
+
+If loading an existing model:
+
+- *in_path*: Provide the input path where the fitted model is saved as a .rds file.
+
+NOTE: when providing an existing model, still populate all other parameters to ensure the model is processed properly.
 
 ### 3. Run script 
 

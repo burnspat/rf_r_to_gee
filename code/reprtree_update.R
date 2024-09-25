@@ -1,28 +1,206 @@
 # Allow R to handle larger integers
 library(bit64)
 
+# Fits a test random forest model
+# 
+#' @param model_type Name of function used to fit model - 'ranger' or 'randomForest'
+#' @param model_fit_package Package used to fit model - 'base', 'caret' or 'tidymodels'
+#' @param response_type Random forest type - 'classification', 'regression' or 'probability'
+#' @param seed Seed used to ensure repeatability and consistency amongst model fit packages
+fit.test.mod = function(model_type, model_fit_package, response_type, seed){
+  
+  # Get example dataset
+  data = mtcars %>% select(mpg, am, cyl, wt, hp)
+  
+  # Fit model
+  if(model_type == 'ranger'){
+    
+    if(model_fit_package == 'base'){
+      if(response_type == 'classification'){
+        data$am = as.factor(data$am)
+        response_var = 'am'
+        rf = ranger(as.formula(paste(response_var, '~.')), 
+                    data = data, 
+                    num.trees = 100, 
+                    seed = seed)
+      }else if(response_type == 'probability'){
+        data$am = as.factor(data$am)
+        response_var = 'am'
+        rf = ranger(as.formula(paste(response_var, '~.')), 
+                    data = data, 
+                    num.trees = 100, 
+                    probability = TRUE, 
+                    seed = seed)
+      }else if(response_type == 'regression'){
+        response_var = 'mpg'
+        rf = ranger(as.formula(paste(response_var, '~.')), 
+                    data = data, 
+                    num.trees = 100, 
+                    seed = seed)
+      }else{
+        stop('Response type not recognized, choose "classification" or "probability" or "regression"')
+      }
+    }else if(model_fit_package == 'caret'){
+      if(response_type == 'classification'){
+        data$am = as.factor(data$am)
+        response_var = 'am'
+        rf <- caret::train(as.formula(paste(response_var, '~.')), 
+                           data = data, 
+                           method = model_type, 
+                           num.trees = 100, 
+                           seed = seed, 
+                           tuneGrid = expand.grid(mtry = floor(sqrt(length(labels(terms(as.formula(paste(response_var, '~.')), data = data))))), splitrule = 'gini', min.node.size = 1))
+      }else if(response_type == 'probability'){
+        stop('Probability models not available in caret, change either model fit package or response type')
+      }else if(response_type == 'regression'){
+        response_var = 'mpg'
+        rf <- caret::train(as.formula(paste(response_var, '~.')), 
+                           data = data, 
+                           method = model_type, 
+                           num.trees = 100, 
+                           seed = seed, 
+                           tuneGrid = expand.grid(mtry = floor(sqrt(length(labels(terms(as.formula(paste(response_var, '~.')), data = data))))), splitrule = 'variance', min.node.size = 5))
+      }else{
+        stop('Response type not recognized, choose "classification" or "probability" or "regression"')
+      }
+    }else if(model_fit_package == 'tidymodels'){
+      if(response_type == 'classification'){
+        data$am = as.factor(data$am)
+        response_var = 'am'
+        rf <- rand_forest(trees = 100) %>% 
+          set_engine(model_type, probability = FALSE, seed = seed) %>% 
+          set_mode(response_type) %>% 
+          fit(as.formula(paste(response_var, '~.')), data = data)
+      }else if(response_type == 'probability'){
+        data$am = as.factor(data$am)
+        response_var = 'am'
+        rf <- rand_forest(trees = 100) %>% 
+          set_engine(model_type, seed = seed) %>% 
+          set_mode('classification') %>% 
+          fit(as.formula(paste(response_var, '~.')), data = data)
+      }else if(response_type == 'regression'){
+        response_var = 'mpg'
+        rf <- rand_forest(trees = 100) %>% 
+          set_engine(model_type, seed = seed) %>% 
+          set_mode(response_type) %>% 
+          fit(as.formula(paste(response_var, '~.')), data = data)
+      }else{
+        stop('Response type not recognized, choose "classification" or "probability" or "regression"')
+      }
+    }else{
+      stop('Model fit package not recognized, choose "base" or "caret" or "tidymodels"')
+    }
+    
+  }else if(model_type == 'randomForest'){
+    
+    if(model_fit_package == 'base'){
+      if(response_type == 'classification'){
+        data$am = as.factor(data$am)
+        response_var = 'am'
+        set.seed(seed)
+        rf = randomForest(as.formula(paste(response_var, '~.')), 
+                          data = data, 
+                          ntree = 100)
+      }else if(response_type == 'probability'){
+        stop('Probability models not available for randomForest, either change model type to "ranger", or change response type')
+      }else if(response_type == 'regression'){
+        response_var = 'mpg'
+        set.seed(seed)
+        rf = randomForest(as.formula(paste(response_var, '~.')), 
+                          data = data, 
+                          ntree = 100)
+      }else{
+        stop('Response type not recognized, choose "classification" or "probability" or "regression"')
+      }
+    }else if(model_fit_package == 'caret'){
+      if(response_type == 'classification'){
+        data$am = as.factor(data$am)
+        response_var = 'am'
+        rf <- caret::train(x = data[, names(data) %in% labels(terms(as.formula(paste(response_var, '~.')), data = data))],
+                           y = data[[response_var]], 
+                           method = "rf", 
+                           ntree = 100, 
+                           nodesize = 1,
+                           importance = FALSE,
+                           allowParallel = FALSE,
+                           tuneGrid = expand.grid(mtry = floor(sqrt(length(labels(terms(as.formula(paste(response_var, '~.')), data = data)))))),
+                           trControl = trainControl(method = 'none', seed = seed))
+      }else if(response_type == 'probability'){
+        stop('Probability models not available for randomForest, either change model type to "ranger", or change response type')
+      }else if(response_type == 'regression'){
+        response_var = 'mpg'
+        rf <- caret::train(x = data[, names(data) %in% labels(terms(as.formula(paste(response_var, '~.')), data = data))],
+                           y = data[[response_var]],
+                           method = "rf", 
+                           ntree = 100, 
+                           nodesize = 5,
+                           importance = FALSE,
+                           allowParallel = FALSE,
+                           tuneGrid = data.frame(mtry = floor((length(labels(terms(as.formula(paste(response_var, '~.')), data = data))))/3)),
+                           trControl = trainControl(method = 'none', seed = seed))
+      }else{
+        stop('Response type not recognized, choose "classification" or "probability" or "regression"')
+      }
+    }else if(model_fit_package == 'tidymodels'){
+      if(response_type == 'classification'){
+        data$am = as.factor(data$am)
+        response_var = 'am'
+        set.seed(seed)
+        rf <- rand_forest(trees = 100) %>% 
+          set_engine(model_type, probability = FALSE) %>% 
+          set_mode(response_type) %>% 
+          fit(as.formula(paste(response_var, '~.')), data = data)
+      }else if(response_type == 'probability'){
+        stop('Probability models not available for randomForest, either change model type to "ranger", or change response type')
+      }else if(response_type == 'regression'){
+        response_var = 'mpg'
+        set.seed(seed)
+        rf <- rand_forest(trees = 100) %>% 
+          set_engine(model_type) %>% 
+          set_mode(response_type) %>% 
+          fit(as.formula(paste(response_var, '~.')), data = data)
+      }else{
+        stop('Response type not recognized, choose "classification" or "probability" or "regression"')
+      }
+    }else{
+      stop('Model fit package not recognized, choose "base" or "caret" or "tidymodels"')
+    }
+    
+  }
+  
+  if(model_type == 'randomForest' & response_type == 'probability'){
+    stop('Probability models not available for randomForest, either change model type to "ranger", or change response type')
+  }
+  if(model_type == 'ranger' & response_type == 'probability' & caret == TRUE){
+    stop('Probability models not available in caret, change either model fit package or response type')
+  }
+  
+  return(rf)
+  
+}
+
 # Prep a random forest model for conversion
 # Adds relevant metadata to model object
 # 
 #' @param init_mod A random forest model fitted in R using either ranger or randomForest
 #' @param model_type Name of function used to fit model - 'ranger' or 'randomForest'
 #' @param response_type Random forest type - 'classification', 'regression' or 'probability'
-#' @param caret Caret used to fit model?
-#' @param tidymodels Tidymodels used to fit model?
-prep.mod = function(init_mod, model_type, response_type, caret = FALSE, tidymodels = FALSE){
+#' @param model_fit_package Package used to fit model - 'base', 'caret' or 'tidymodels'
+prep.mod = function(init_mod, model_type, response_type, model_fit_package){
   
   # Get base model from caret/tidymodels
-  if(caret) init_mod = init_mod$finalModel
-  if(tidymodels) init_mod = init_mod$fit
+  if(model_fit_package == 'caret') init_mod = init_mod$finalModel
+  if(model_fit_package == 'tidymodels') init_mod = init_mod$fit
   
   # Get model specific parameters
   if(model_type == 'ranger'){
     n_tree_var = 'num.trees'
-    response_var = init_mod$dependent.variable.name
+    # response_var = init_mod$dependent.variable.name # OLD
     if(response_type == 'classification'){
       pred_var = 'prediction'
     }else if(response_type == 'probability'){
-      pred_var = paste0('pred.', levels(data[, response_var])[1])
+      pred_var = paste0('pred.', init_mod$forest$levels[1]) # NEW
+      # pred_var = paste0('pred.', levels(data[, response_var])[1]) # OLD
     }else if(response_type == 'regression'){
       pred_var = 'prediction'
     }else{
@@ -34,7 +212,7 @@ prep.mod = function(init_mod, model_type, response_type, caret = FALSE, tidymode
     init_mod$n_tree_var = n_tree_var
   }else if(model_type == 'randomForest'){
     n_tree_var = 'ntree'
-    response_var = names(attributes(init_mod$terms)$dataClasses)[1]
+    # response_var = names(attributes(init_mod$terms)$dataClasses)[1]
     if(response_type == 'classification'){
       pred_var = 'prediction'
     }else if(response_type == 'probability'){
@@ -177,7 +355,16 @@ as.tree <- function(gTree,rforest){
   
   # Get predictor classes
   if(rforest$model_type == 'randomForest'){
+    # Includes response variable, but this will be taken care of when we join with tree split variables
     classes = attributes(rforest$terms)$dataClasses
+    if(is.null(classes)){
+      # If the forest object does NOT have a 'terms' slot...
+      # It means it was fit using caret
+      # Caret automatically one hot encodes categorical variables
+      # We can safely assign all covariates as 'numeric'
+      classes = rep('numeric', length(rforest$xNames))
+      names(classes) = rforest$xNames
+    }
   } else if(rforest$model_type == 'ranger'){
     classes = rforest$forest$covariate.levels
     if(is.null(classes)){
@@ -186,6 +373,7 @@ as.tree <- function(gTree,rforest){
       # It means step_dummy was used to encode categorical variables
       # We can safely assign all covariates as 'numeric'
       classes = rep('numeric', length(rforest$forest$independent.variable.names))
+      names(classes) = rforest$forest$independent.variable.names
     } else{
       # Otherwise, use the 'covariate.levels' slot to assign covariate classes
       classes[!sapply(classes, is.null)]  = 'factor'
@@ -222,7 +410,9 @@ as.tree <- function(gTree,rforest){
   x <- ifelse(fr$var=='<leaf>', bl[,3], gsub('.{1}$', '', bl[,1]))
   if(nrow(gTree) == 1){x = c("1")} # If there is only one row, assign it row name = 1 so that it is designated as the root
   
-  # Get predictor classes
+  # Populate response variable probabilities if classification or probability forest
+  # GEE does not actually use these so a place holder probability is used in all instances
+  # If regression, the matrix is empty nothing is added to 'fr'
   if(rforest$model_type == 'randomForest'){
     fr$yprob = matrix(1/length(rforest$classes),nrow=nrow(fr), ncol=length(rforest$classes))
   } else if(rforest$model_type == 'ranger'){
