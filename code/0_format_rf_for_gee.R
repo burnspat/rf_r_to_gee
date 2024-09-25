@@ -25,7 +25,7 @@ options(scipen=999) # Ensure numbers are not represented in scientific notation
 model_generation_method = 'fit' # Choose 'fit' to fit an example model, choose 'load' to load existing model
 model_type = 'randomForest' # Specify R package used to create model - 'randomForest' or 'ranger'
 response_type = 'regression' # Choose 'classification' or 'probability' or 'regression'
-model_fit_package = 'tidymodels' # Choose 'base' for models fit directly with 'randomForest' or 'ranger', choose 'caret' for models fit using 'caret', choose 'tidymodels' for models fit using tidymodels
+model_fit_package = 'base' # Choose 'base' for models fit directly with 'randomForest' or 'ranger', choose 'caret' for models fit using 'caret', choose 'tidymodels' for models fit using tidymodels
 out_mod_prefix = 'mtcars_' # Name prefix to use for output model
 out_path = 'example_output/' # Where to save the formatted forest
 
