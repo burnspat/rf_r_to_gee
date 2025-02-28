@@ -195,12 +195,10 @@ prep.mod = function(init_mod, model_type, response_type, model_fit_package){
   # Get model specific parameters
   if(model_type == 'ranger'){
     n_tree_var = 'num.trees'
-    # response_var = init_mod$dependent.variable.name # OLD
     if(response_type == 'classification'){
       pred_var = 'prediction'
     }else if(response_type == 'probability'){
       pred_var = paste0('pred.', init_mod$forest$levels[1]) # NEW
-      # pred_var = paste0('pred.', levels(data[, response_var])[1]) # OLD
     }else if(response_type == 'regression'){
       pred_var = 'prediction'
     }else{
@@ -296,6 +294,8 @@ convert.forest = function(rf_mod = NULL, out_file = NULL){
   tree_file  = gsub(pattern = "node\\), split, n, deviance, yval", replace = "", x = tree_file) # Remove header
   tree_file  = gsub(pattern = "      \\* denotes terminal node", replace = "", x = tree_file) # Remove header
   tree_file  = gsub(pattern = "\\.(?![0-9])", replace = "", x = tree_file, perl=TRUE) # Periods cannot be read by GEE, remove periods if not followed by a number
+  tree_file  = gsub(pattern = "-1.0000", replace = "-1.0", x = tree_file, perl=TRUE) # Shorten terminal node placeholders
+  tree_file  = gsub(pattern = "^ ", replace = "", x = tree_file) # Remove extra leading space before nodes
   if(rf_mod$response_type == 'classification'){
     tree_file  = gsub(pattern = ", \\(yprob\\)", replace = "", x = tree_file) # Remove header
   }
